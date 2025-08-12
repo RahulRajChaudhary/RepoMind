@@ -2,19 +2,166 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+    provider        = "prisma-client-js"
+    previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+    provider   = "postgresql"
+    url        = env("DATABASE_URL")
+    extensions = [vector]
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
+model User {
+    id        String   @id @default(cuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    @@index([name])
+    imageUrl     String?
+    firstName    String?
+    lastName     String?
+    emailAddress String     @unique
+    projectId    String?
+    questions    Question[]
+
+    credits Int @default(150)
+
+    userToProjects     UserToProject[]
+    meetings           Meeting[]
+    stripeTransactions StripeTransaction[]
+}
+
+model UserToProject {
+    id        String @id @default(cuid())
+    userId    String
+    projectId String
+
+    user    User    @relation(fields: [userId], references: [id])
+    project Project @relation(fields: [projectId], references: [id])
+
+    @@unique([userId, projectId])
+}
+
+model Project {
+    id   String @id @default(cuid())
+    name String
+
+    githubUrl     String?
+    documentation String?    @db.Text
+    meetings      Meeting[]
+    questions     Question[]
+    mermaidGraph  String?
+    commits       Commit[]
+
+    createdAt            DateTime              @default(now())
+    updatedAt            DateTime              @updatedAt
+    deletedAt            DateTime?
+    userToProjects       UserToProject[]
+    sourceCodeEmbeddings SourceCodeEmbedding[]
+}
+
+model SourceCodeEmbedding {
+    id String @id @default(cuid())
+
+    summaryEmbedding Unsupported("vector(768)")?
+    sourceCode       String
+    fileName         String
+    summary          String
+
+    projectId String
+    project   Project @relation(fields: [projectId], references: [id])
+
+    @@unique([projectId, fileName])
+}
+
+model Question {
+    id       String @id @default(cuid())
+    question String
+    answer   String
+
+    filesReferenced Json?
+
+    projectId String
+    project   Project @relation(fields: [projectId], references: [id])
+
+    user   User   @relation(fields: [userId], references: [id])
+    userId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Commit {
+    id                 String   @id @default(cuid())
+    commitMessage      String
+    commitHash         String
+    commitAuthorName   String
+    commitAuthorAvatar String
+    commitDate         DateTime
+    summary            String
+
+    projectId String
+    project   Project @relation(fields: [projectId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Meeting {
+    id   String @id @default(cuid())
+    name String
+    url  String
+
+    createdById String?
+    createdBy   User?   @relation(fields: [createdById], references: [id])
+
+    projectId String
+    project   Project @relation(fields: [projectId], references: [id])
+
+    status MeetingStatus @default(PROCESSING)
+
+    issues Issue[]
+
+    createdAt         DateTime           @default(now())
+    updatedAt         DateTime           @updatedAt
+    meetingEmbeddings MeetingEmbedding[]
+}
+
+enum MeetingStatus {
+    PROCESSING
+    COMPLETED
+}
+
+model MeetingEmbedding {
+    id        String                      @id @default(cuid())
+    embedding Unsupported("vector(768)")?
+    content   String?
+    meetingId String
+    meeting   Meeting                     @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model Issue {
+    id       String  @id @default(cuid())
+    start    String
+    end      String
+    gist     String?
+    headline String?
+    summary  String?
+
+    meetingId String
+    meeting   Meeting @relation(fields: [meetingId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model StripeTransaction {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+
+    userId  String
+    credits Int
+
+    customerId String
+    user       User   @relation(fields: [userId], references: [id])
 }
