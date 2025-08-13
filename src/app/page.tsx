@@ -1,7 +1,6 @@
 
-export default async function Home() {
+import { redirect } from "next/navigation";
 
-  return (
-   <div className="text-3xl bg-slate-600">Home</div>
-  );
+export default function Home() {
+  return redirect("/dashboard");
 }
