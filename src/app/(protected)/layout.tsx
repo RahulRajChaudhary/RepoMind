@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider} from "@/components/ui/sidebar"
 import { AppSidebar } from "./app-sidebar"
 import { UserButton } from "@clerk/nextjs"
 import SearchBar from "./search-bar"
