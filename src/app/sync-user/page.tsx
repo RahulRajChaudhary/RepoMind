@@ -4,7 +4,9 @@ import { notFound, redirect } from 'next/navigation'
 import React from 'react'
 
 const SyncUser = async () => {
+    console.log('Syncing user...')
     const { userId } = await auth()
+    console.log(userId)
     if (!userId) {
         throw new Error('User not found')
     }
