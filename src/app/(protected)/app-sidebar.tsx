@@ -1,12 +1,14 @@
 "use client"
 
 import { Button } from '@/components/ui/button'
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
-import { Bot, CreditCard, LayoutDashboard, Plus, Presentation } from 'lucide-react' // Changed PlusIcon to Plus
-import Link from 'next/link' // Added Link import
+import { Bot, CreditCard, LayoutDashboard, Plus, Presentation } from 'lucide-react'
+import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import React from 'react'
+import Logo from './logo'
 
 const items = [
   {
@@ -49,11 +51,12 @@ const projects = [
 export const AppSidebar = () => {
 
   const pathname = usePathname();
+  const {open} = useSidebar()
 
   return (
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
-        <h1>Logo</h1>
+        <Logo />
       </SidebarHeader>
 
       <SidebarContent>
@@ -85,40 +88,34 @@ export const AppSidebar = () => {
           <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {projects.map((project) => (
+              {projects?.map((project) => (
                 <SidebarMenuItem key={project.id}>
                   <SidebarMenuButton asChild>
-                    <div className={cn(
-                      "flex items-center gap-3 p-2 rounded-md transition-colors",
-                      {
-                        // 'bg-primary text-white': projectId === project.id,
-                        'hover:bg-accent': true
-                      }
-                    )}>
-                      <div className={cn(
-                        "rounded-sm border w-6 h-6 flex items-center justify-center text-xs font-medium bg-background",
-                        {
-                          // If active: 'bg-primary text-primary-foreground border-primary'
-                        }
-                      )}>
-                        {project.name[0]}
+                    <div >
+                      <div className="">
+                        <div className={cn("rounded-sm border size-6 flex items-center justify-center text-sm bg-white text-primary", {
+                          // 'bg-primary text-white': projectId === project.id,
+                          'bg-primary text-white': true,
+                        })}>
+                          {project.name[0]}
+                        </div>
                       </div>
-                      <span className="truncate">{project.name}</span>
+                      <span>{project.name}</span>
                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              
-              <SidebarMenuItem key="create">
-                <div className="mt-2">
+              <div className="h-2"></div>
+              {open && (
+                <SidebarMenuItem key="create">
                   <Link href="/create">
-                    <Button size="sm" variant="outline" className="w-full">
-                      <Plus className="mr-2 h-4 w-4" /> 
-                      Create Project
+                    <Button size='sm' variant={'outline'}>
+                      <Plus />
+                      <span>Create Project</span>
                     </Button>
                   </Link>
-                </div>
-              </SidebarMenuItem>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -126,3 +123,4 @@ export const AppSidebar = () => {
     </Sidebar>
   )
 }
+
