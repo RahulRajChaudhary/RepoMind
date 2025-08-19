@@ -26,15 +26,17 @@ const CreateProjectPage = () => {
   const router = useRouter()
 
   function onSubmit(data: FormInput) {
-    window.alert(JSON.stringify(data, null))
     createProject.mutate({
       githubUrl: data.repoUrl,
       name: data.projectName,
-      githubToken: data.githubToken ?? ''
+      githubToken: data.githubToken!
     }, {
       onSuccess: () => {
         toast.success('Project created successfully')
         reset()
+      },
+      onError: () => {
+        toast.error('Error creating project')
       }
     })
   }
@@ -72,12 +74,12 @@ const CreateProjectPage = () => {
             {...register('githubToken')}
           />
           <div className='h-4'></div>
-          <Button type='submit'>Create Project</Button>
+          <Button type='submit' disabled={createProject.isPending}>Create Project</Button>
         </form>
       </div>
 
     </div>
-  );
+  ); 
 }
 
 export default CreateProjectPage

@@ -1,40 +1,51 @@
 import { db } from '@/server/db'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { notFound, redirect } from 'next/navigation'
-import React from 'react'
+import SyncUserClient from './sync-user-client'
 
-const SyncUser = async () => {
-    console.log('Syncing user...')
+export default async function SyncUser() {
+  try {
     const { userId } = await auth()
-    console.log(userId)
+    
     if (!userId) {
-        throw new Error('User not found')
+      return <SyncUserClient />
     }
+
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
-    if (!user.emailAddresses[0]?.emailAddress) {
-        return notFound()
+    const email = user.emailAddresses.find(
+      e => e.id === user.primaryEmailAddressId
+    )?.emailAddress
+    
+    if (!email) {
+      return notFound()
     }
 
     await db.user.upsert({
-        where: {
-            emailAddress: user.emailAddresses[0]?.emailAddress ?? ""
-        },
-        update: {
-            imageUrl: user.imageUrl,
-            firstName: user.firstName,
-            lastName: user.lastName
-        },
-        create: {
-            id: userId,
-            emailAddress: user.emailAddresses[0]?.emailAddress ?? "",
-            imageUrl: user.imageUrl,
-            firstName: user.firstName,
-            lastName: user.lastName
-        }
+      where: { id: userId },
+      update: {
+        emailAddress: email,
+        imageUrl: user.imageUrl,
+        firstName: user.firstName,
+        lastName: user.lastName
+      },
+      create: {
+        id: userId,
+        emailAddress: email,
+        imageUrl: user.imageUrl,
+        firstName: user.firstName,
+        lastName: user.lastName
+      }
     })
 
+    // ✅ Don’t catch NEXT_REDIRECT — let Next.js handle it
     return redirect('/dashboard')
-}
 
-export default SyncUser
+  } catch (error: any) {
+    if (error?.digest?.startsWith("NEXT_REDIRECT")) {
+      throw error // let Next.js handle redirect
+    }
+    console.error('User sync failed:', error)
+    return <SyncUserClient />
+  }
+}

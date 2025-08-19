@@ -1,6 +1,14 @@
-import { UserButton } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
-export default function Home() {
-  return redirect("/dashboard");
+import { auth } from "@clerk/nextjs/server";
+
+export default async function Home() {
+  const { userId } = await auth();
+  
+  if (userId) {
+    return redirect("/dashboard");
+  } else {
+    // Redirect to sign-in for unauthenticated users
+    return redirect("/sign-in");
+  }
 }

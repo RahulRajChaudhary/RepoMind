@@ -2,14 +2,18 @@
 
 import { useUser } from '@clerk/nextjs'
 import { Loader } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
 const DashboardPage = () => {
-  const { isLoaded, user, isSignedIn } =  useUser()
+  const { isLoaded, user, isSignedIn } = useUser()
+  const router = useRouter()
 
   useEffect(() => {
-    console.log('Dashboard user state:', { isLoaded, user, isSignedIn })
-  }, [isLoaded, user, isSignedIn])
+    if (isLoaded && !isSignedIn) {
+      router.replace('/sign-in')
+    }
+  }, [isLoaded, isSignedIn, router])
 
   if (!isLoaded) {
     return (
@@ -21,12 +25,7 @@ const DashboardPage = () => {
   }
 
   if (!isSignedIn) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-2xl font-bold mb-4">Not Signed In</h1>
-        <p>You need to be signed in to view this page</p>
-      </div>
-    )
+    return null; // Redirecting via useEffect
   }
 
   return (
