@@ -1,43 +1,51 @@
-"use client"
+'use client'
+import useProject from '@/hooks/use-project'
+import { ExternalLink, Github } from 'lucide-react'
+import Link from 'next/link'
+import React from 'react'
 
-import { useUser } from '@clerk/nextjs'
-import { Loader } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 
 const DashboardPage = () => {
-  const { isLoaded, user, isSignedIn } = useUser()
-  const router = useRouter()
+    const { project } = useProject()
 
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.replace('/sign-in')
-    }
-  }, [isLoaded, isSignedIn, router])
-
-  if (!isLoaded) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader className="animate-spin h-12 w-12" />
-        <span className="ml-4 text-lg">Loading user data...</span>
-      </div>
+        <div>
+            <div className="flex items-center justify-between flex-wrap gap-y-4">
+                <div className="w-fit rounded-md bg-primary px-4 py-3">
+                    <div className="flex items-center">
+                        <Github className="h-5 w-5 text-white" />
+                        <div className="ml-2">
+                            <p className="text-sm font-medium text-white">
+                                This project is linked to{" "}
+                                <Link
+                                    className="inline-flex items-center text-white/80 hover:underline"
+                                    href={project?.githubUrl ?? ''}
+                                >
+                                    {project?.githubUrl}
+                                    <ExternalLink className="ml-1 h-4 w-4" />
+                                </Link>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="h-4"></div>
+                <div className="flex items-center gap-4">
+                    {/* <TeamMembers />
+                    <InviteButton />
+                    <ArchiveButton /> */}
+                </div>
+            </div>
+            <div className="mt-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+                    {/* <AskQuestionCard />
+                    <MeetingCard /> */}
+                </div>
+            </div>
+            <div className="mt-8">
+                {/* <CommitLog /> */}
+            </div>
+        </div>
     )
-  }
-
-  if (!isSignedIn) {
-    return null; // Redirecting via useEffect
-  }
-
-  return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-4">
-        {user ? `Welcome, ${user.firstName}!` : 'No user data'}
-      </h1>
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <pre>{user.fullName || 'No user data'}</pre>
-      </div>
-    </div>
-  )
 }
 
 export default DashboardPage

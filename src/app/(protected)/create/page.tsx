@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { AlertTriangle, ArrowRight, FileText, Github, Info, Key } from 'lucide-react';
+import useRefetch from '@/hooks/use-refetch';
 
 
 
@@ -18,10 +19,8 @@ type FormInput = {
 
 const CreateProjectPage = () => {
   const { register, handleSubmit, reset } = useForm<FormInput>();
-  const createProject = api.project.createProject.useMutation({
-    
-  })
-
+  const createProject = api.project.createProject.useMutation()
+  const refetch = useRefetch()
 
   const router = useRouter()
 
@@ -33,6 +32,7 @@ const CreateProjectPage = () => {
     }, {
       onSuccess: () => {
         toast.success('Project created successfully')
+        refetch()
         reset()
       },
       onError: () => {
@@ -58,7 +58,7 @@ const CreateProjectPage = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Input
             placeholder="Project Name"
-            {...register('projectName',{ required: true })}
+            {...register('projectName', { required: true })}
             required
           />
           <div className='h-2'></div>
@@ -69,7 +69,7 @@ const CreateProjectPage = () => {
             required
           />
           <div className='h-2'></div>
-           <Input
+          <Input
             placeholder="Github Token(Optional)"
             {...register('githubToken')}
           />
@@ -79,7 +79,7 @@ const CreateProjectPage = () => {
       </div>
 
     </div>
-  ); 
+  );
 }
 
 export default CreateProjectPage

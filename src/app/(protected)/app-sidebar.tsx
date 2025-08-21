@@ -9,6 +9,8 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 import Logo from './logo'
+import useProject from '@/hooks/use-project'
+import useRefetch from '@/hooks/use-refetch'
 
 const items = [
   {
@@ -33,25 +35,27 @@ const items = [
   }
 ]
 
-const projects = [
-  {
-    id: '1', // Added ID for key
-    name: 'Project 1',
-  },
-  {
-    id: '2',
-    name: 'Project 2',
-  },
-  {
-    id: '3',
-    name: 'Project 3',
-  }
-]
+// const projects = [
+//   {
+//     id: '1', // Added ID for key
+//     name: 'Project 1',
+//   },
+//   {
+//     id: '2',
+//     name: 'Project 2',
+//   },
+//   {
+//     id: '3',
+//     name: 'Project 3',
+//   }
+// ]
 
 export const AppSidebar = () => {
 
   const pathname = usePathname();
-  const {open} = useSidebar()
+  const { open } = useSidebar()
+  const { projects, projectId, setProjectId } = useProject()
+  
 
   return (
     <Sidebar collapsible="icon" variant="floating">
@@ -91,11 +95,11 @@ export const AppSidebar = () => {
               {projects?.map((project) => (
                 <SidebarMenuItem key={project.id}>
                   <SidebarMenuButton asChild>
-                    <div >
+                    <div  onClick={() => setProjectId(project.id)}>
                       <div className="">
                         <div className={cn("rounded-sm border size-6 flex items-center justify-center text-sm bg-white text-primary", {
-                          // 'bg-primary text-white': projectId === project.id,
-                          'bg-primary text-white': true,
+                          'bg-primary text-white': projectId === project.id,
+                          
                         })}>
                           {project.name[0]}
                         </div>
