@@ -18,7 +18,7 @@ export default function CommitLog() {
     return (
         <>
             <ul role="list" className="space-y-6">
-                {commits.map((commit, commitIdx) => (
+                {commits?.map((commit, commitIdx) => (
                     <li key={commit.id} className="relative flex gap-x-4">
                         <div
                             className={cn(

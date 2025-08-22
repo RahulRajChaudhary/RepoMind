@@ -3,6 +3,9 @@ import useProject from '@/hooks/use-project'
 import { ExternalLink, Github } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
+import CommitLog from './commit-log'
+import AskQuestionCard from './ask-question-card'
+import MeetingCard from './meeting-card'
 
 
 const DashboardPage = () => {
@@ -42,7 +45,7 @@ const DashboardPage = () => {
                 </div>
             </div>
             <div className="mt-8">
-                {/* <CommitLog /> */}
+                <CommitLog />
             </div>
         </div>
     )
