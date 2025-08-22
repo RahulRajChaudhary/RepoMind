@@ -1,7 +1,7 @@
 'use server'
 
 import { streamText } from 'ai';
-import { createStreamableValue } from 'ai/rsc';
+import { createStreamableValue } from '@ai-sdk/rsc'
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { getEmbeddings } from '@/lib/gemini';
 import { db } from '@/server/db';

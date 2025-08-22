@@ -1,13 +1,13 @@
 'use client'
 import MDEditor from '@uiw/react-md-editor';
-import { MarkdownPreviewRef } from '@uiw/react-markdown-preview'
+import type { MarkdownPreviewRef } from '@uiw/react-markdown-preview';
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { generate } from './action'
-import { readStreamableValue } from 'ai/rsc'
+import { readStreamableValue } from '@ai-sdk/rsc'
 import CodeReferences from './code-references';
 import Image from 'next/image';
 import { DownloadIcon } from 'lucide-react';
@@ -87,7 +87,7 @@ const AskQuestionCard = (props: Props) => {
                 <CardHeader>
                     <CardTitle>Ask a question</CardTitle>
                     <CardDescription>
-                        Dionysus has knowledge of the codebase
+                        RepoMind has knowledge of the codebase
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -98,7 +98,7 @@ const AskQuestionCard = (props: Props) => {
                             onChange={(e) => setQuestion(e.target.value)}
                         />
                         <Button isLoading={isLoading} className="mt-4">
-                            Ask Dionysus!
+                            Ask RepoMind!
                         </Button>
                     </form>
                 </CardContent>
