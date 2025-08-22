@@ -5,7 +5,7 @@ import axios from "axios";
 
 
 const octokit = new Octokit({
-    auth: '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'
+    auth: process.env.OCTOKIT_TOKEN
 });
 
 type response = {
