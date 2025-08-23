@@ -19,7 +19,7 @@ type FormInput = {
 
 const CreateProjectPage = () => {
   const { register, handleSubmit, reset } = useForm<FormInput>();
-  const createProject = api.project.createProject.useMutation()
+  const createProject = api.project.create.useMutation()
   const refetch = useRefetch()
 
   const router = useRouter()

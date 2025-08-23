@@ -4,8 +4,7 @@ import 'react-circular-progressbar/dist/styles.css';
 import axios from "axios";
 import { PlusIcon, Presentation, Upload } from "lucide-react";
 import React from "react";
-import { useDropzone } from "react-dropzone";
-import { Project } from "@prisma/client";
+import { useDropzone } from "react-dropzone"
 import { uploadFileToFirebase } from "@/lib/storage";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
