@@ -65,7 +65,7 @@ export const loadGithubRepo = async (githubUrl: string, githubToken?: string) =>
             ignoreFiles: ['package-lock.json', 'bun.lockb'],
             recursive: true,
             // recursive: false,
-            accessToken: githubToken || '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',
+            accessToken: process.env.GITHUB_TOKEN,
             unknown: "warn",
             maxConcurrency: 5, // Defaults to 2
         }
