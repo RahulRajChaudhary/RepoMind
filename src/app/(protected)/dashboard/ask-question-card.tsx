@@ -58,7 +58,7 @@ const AskQuestionCard = (props: Props) => {
                 <DialogContent className='sm:max-w-[80vw]'>
                     <div className="flex items-center gap-2">
                         <DialogTitle>
-                            <Image src="/logo.png" alt="Logo" width={40} height={40} />
+                            <Image src="/repomind-logo.png" alt="Logo" width={40} height={40} />
                         </DialogTitle>
                         <Button isLoading={saveAnswer.isPending || isLoading} variant="outline" onClick={() => {
                             saveAnswer.mutate({

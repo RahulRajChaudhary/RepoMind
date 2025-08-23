@@ -10,7 +10,7 @@ export const getSummary = async (doc: Awaited<ReturnType<typeof loadGithubRepo>>
     const code = doc.pageContent.slice(0, 10000); // Limit to 10000 characters
 
     // Use the Gemini model for content generation
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
     // Combine the system and user prompts for the Gemini API call
     const prompt = `You are an intelligent senior software engineer who specialises in onboarding junior software engineers onto projects.
@@ -31,7 +31,7 @@ Give a summary no more than 100 words of the code above`;
 
 export const aiSummariseCommit = async (diff: string) => {
     // Use the Gemini model for content generation
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
     // Combine the system and user prompts for the Gemini API call
     const prompt = `You are an expert programmer, and you are trying to summarize a git diff.

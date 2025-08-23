@@ -7,8 +7,7 @@ const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
 });
 
-
-type response = {
+type CommitResponse = {
     commitHash: string;
     commitMessage: string;
     commitAuthorName: string;
@@ -18,23 +17,25 @@ type response = {
 
 export const getCommitHashes = async (
     githubUrl: string,
-): Promise<response[]> => {
+): Promise<CommitResponse[]> => {
     try {
-        const url = new URL(githubUrl);
-        const pathParts = url.pathname.split('/').filter(part => part);
-
-        if (pathParts.length < 2) {
-            throw new Error("Invalid github url");
+        // Add validation for empty URL
+        if (!githubUrl || githubUrl.trim() === '') {
+            console.error("Empty GitHub URL provided");
+            return [];
         }
 
-        const owner = pathParts[0] as string;
-        const repo = pathParts[1] as string;
+        const [owner, repo] = githubUrl.split("/").slice(3, 5);
+        if (!owner || !repo) {
+            throw new Error("Invalid github url");
+        }
 
         const { data } = await octokit.rest.repos.listCommits({
             owner,
             repo,
         });
-        //   need commit author, commit message, commit hash and commit time
+
+        // need commit author, commit message, commit hash and commit time
         const sortedCommits = data.sort(
             (a: any, b: any) =>
                 new Date(b.commit.author.date).getTime() -
@@ -55,38 +56,61 @@ export const getCommitHashes = async (
 };
 
 export const pollRepo = async (projectId: string) => {
-    const { project, githubUrl } = await fetchProjectGitHubUrl(projectId);
-    const commitHases = await getCommitHashes(project?.githubUrl ?? "");
-    const unprocessedCommits = await filterUnprocessedCommits(projectId, commitHases);
-    const summariesResponse = await Promise.allSettled(
-        unprocessedCommits.map((hash) => {
-            return summariseCommit(githubUrl, hash.commitHash);
-        }),
-    );
-    const summaries = summariesResponse.map((summary) => {
-        if (summary.status === "fulfilled") {
-            return summary.value as string;
+    try {
+        const { project, githubUrl } = await fetchProjectGitHubUrl(projectId);
+        const commitHashes = await getCommitHashes(project?.githubUrl ?? "");
+        const unprocessedCommits = await filterUnprocessedCommits(projectId, commitHashes);
+
+        const summariesResponse = await Promise.allSettled(
+            unprocessedCommits.map((hash) => {
+                return summariseCommit(githubUrl, hash.commitHash);
+            }),
+        );
+
+        // Filter out failed summaries and map to valid data
+        const validCommitsData = summariesResponse
+            .map((summaryResult, index) => {
+                if (summaryResult.status === "fulfilled" && summaryResult.value) {
+                    const unprocessedCommit = unprocessedCommits[index];
+                    if (unprocessedCommit) {
+                        return {
+                            projectId: projectId,
+                            commitHash: unprocessedCommit.commitHash,
+                            summary: summaryResult.value,
+                            commitAuthorName: unprocessedCommit.commitAuthorName,
+                            commitDate: unprocessedCommit.commitDate,
+                            commitMessage: unprocessedCommit.commitMessage,
+                            commitAuthorAvatar: unprocessedCommit.commitAuthorAvatar,
+                        };
+                    } else {
+                        return null;
+                    }
+                }
+                return null;
+            })
+            .filter(Boolean) as any[];
+
+        // Only create commits if we have valid data
+        if (validCommitsData.length > 0) {
+            const commits = await db.commit.createMany({
+                data: validCommitsData,
+            });
+            return commits;
         }
-    });
-    const commits = await db.commit.createMany({
-        data: summaries.map((summary, idx) => ({
-            projectId: projectId,
-            commitHash: unprocessedCommits[idx]!.commitHash,
-            summary: summary!,
-            commitAuthorName: unprocessedCommits[idx]!.commitAuthorName,
-            commitDate: unprocessedCommits[idx]!.commitDate,
-            commitMessage: unprocessedCommits[idx]!.commitMessage,
-            commitAuthorAvatar: unprocessedCommits[idx]!.commitAuthorAvatar,
-        })),
-    });
-    return commits;
+
+        return { count: 0 }; // Return empty result if no valid commits
+    } catch (error) {
+        console.error("Error in pollRepo:", error);
+        return { count: 0 };
+    }
 };
 
 async function fetchProjectGitHubUrl(projectId: string) {
     const project = await db.project.findUnique({
         where: {
             id: projectId
-        }, select: {
+        },
+        select: {
             githubUrl: true
         }
     });
@@ -95,26 +119,30 @@ async function fetchProjectGitHubUrl(projectId: string) {
 }
 
 async function summariseCommit(githubUrl: string, commitHash: string) {
-    const { data } = await axios.get(
-        `${githubUrl}/commit/${commitHash}.diff`,
-        {
-            headers: {
-                Accept: "application/vnd.github.v3.diff",
-            },
-        }
-    );
-    return await aiSummariseCommit(data) || ""
+    try {
+        const { data } = await axios.get(
+            `${githubUrl}/commit/${commitHash}.diff`,
+            {
+                headers: {
+                    Accept: "application/vnd.github.v3.diff",
+                },
+            }
+        );
+        return await aiSummariseCommit(data) || "Summary unavailable";
+    } catch (error) {
+        console.error(`Error summarizing commit ${commitHash}:`, error);
+        return "Summary unavailable";
+    }
 }
 
-async function filterUnprocessedCommits(projectId: string, commitHases: response[]) {
+async function filterUnprocessedCommits(projectId: string, commitHashes: CommitResponse[]) {
     const processedCommits = await db.commit.findMany({
         where: {
             projectId: projectId,
         },
     });
-    const unprocessedCommits = commitHases.filter(
+    const unprocessedCommits = commitHashes.filter(
         (hash) => !processedCommits.some((commit) => commit.commitHash === hash.commitHash)
     );
     return unprocessedCommits;
 }
-
