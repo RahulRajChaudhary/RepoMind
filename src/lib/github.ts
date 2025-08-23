@@ -118,10 +118,3 @@ async function filterUnprocessedCommits(projectId: string, commitHases: response
     return unprocessedCommits;
 }
 
-
-// const githubUrl = "https://github.com/elliott-chong/normalhuman"
-// const commitHases = await getCommitHashes(githubUrl);
-// const summaries = await Promise.allSettled(
-//     commitHases.map((hash) => summariseCommit(githubUrl, hash.commitHash))
-// )
-// console.log(summaries)
