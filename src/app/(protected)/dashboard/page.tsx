@@ -6,6 +6,9 @@ import React from 'react'
 import CommitLog from './commit-log'
 import AskQuestionCard from './ask-question-card'
 import MeetingCard from './meeting-card'
+import InviteButton from './invite-button'
+import ArchiveButton from './archive-button'
+import TeamMembers from './team-members'
 
 
 const DashboardPage = () => {
@@ -33,9 +36,9 @@ const DashboardPage = () => {
                 </div>
                 <div className="h-4"></div>
                 <div className="flex items-center gap-4">
-                    {/* <TeamMembers />
+                    <TeamMembers />
                     <InviteButton />
-                    <ArchiveButton /> */}
+                    <ArchiveButton />
                 </div>
             </div>
             <div className="mt-4">

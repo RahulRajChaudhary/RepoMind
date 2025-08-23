@@ -4,8 +4,8 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 
 const useProject = () => {
-    const { data: projects, isLoading } = api.project.getProject.useQuery()
-    const [projectId, setProjectId] = useLocalStorage('repo-projectId', '')
+    const { data: projects, isLoading } = api.project.getAll.useQuery()
+    const [projectId, setProjectId] = useLocalStorage('d-projectId', '')
     const project = projects?.find(project => project.id === projectId)
     const router = useRouter()
 

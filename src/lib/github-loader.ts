@@ -1,10 +1,11 @@
 import { GithubRepoLoader } from "@langchain/community/document_loaders/web/github";
 import pLimit from 'p-limit'
-import { getEmbeddings , getSummary } from "./gemini";
-// import { getSummary } from "./openai";
+import { getEmbeddings } from "./gemini";
+import { getSummary } from "./geminiGen";
 import { exit } from "process";
 import { db } from "@/server/db";
 import { Octokit } from "octokit";
+
 const getFileCount = async (path: string, octokit: Octokit, githubOwner: string, githubRepo: string, acc: number = 0) => {
     const { data } = await octokit.rest.repos.getContent({
         owner: githubOwner,

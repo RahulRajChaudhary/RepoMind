@@ -1,12 +1,12 @@
 import { db } from "@/server/db";
+import axios from "axios";
 import { Octokit } from "octokit";
 import { aiSummariseCommit } from "./gemini";
-import axios from "axios";
-
 
 const octokit = new Octokit({
-    auth: process.env.OCTOKIT_TOKEN
+    auth: process.env.GITHUB_TOKEN,
 });
+
 
 type response = {
     commitHash: string;
@@ -19,29 +19,39 @@ type response = {
 export const getCommitHashes = async (
     githubUrl: string,
 ): Promise<response[]> => {
-    const [owner, repo] = githubUrl.split("/").slice(3, 5);
-    if (!owner || !repo) {
-        throw new Error("Invalid github url")
-    }
-    const { data } = await octokit.rest.repos.listCommits({
-        owner,
-        repo,
-    })
-  
-    //  we need commit author, commit message, commit hash and commit time
-    const sortedCommits = data.sort(
-        (a: any, b: any) => 
-            new Date(b.commit.author.date).getTime() -
-            new Date(a.commit.author.date).getTime(),
-    ) as any[];
+    try {
+        const url = new URL(githubUrl);
+        const pathParts = url.pathname.split('/').filter(part => part);
 
-    return sortedCommits.slice(0, 15).map((commit: any) => ({
-        commitHash: commit.sha as string,
-        commitMessage: commit.commit.message ?? "",
-        commitAuthorName: commit.commit?.author?.name ?? "",
-        commitAuthorAvatar: commit.author?.avatar_url ?? "",
-        commitDate: commit.commit?.author?.date ?? "",
-    }));
+        if (pathParts.length < 2) {
+            throw new Error("Invalid github url");
+        }
+
+        const owner = pathParts[0] as string;
+        const repo = pathParts[1] as string;
+
+        const { data } = await octokit.rest.repos.listCommits({
+            owner,
+            repo,
+        });
+        //   need commit author, commit message, commit hash and commit time
+        const sortedCommits = data.sort(
+            (a: any, b: any) =>
+                new Date(b.commit.author.date).getTime() -
+                new Date(a.commit.author.date).getTime(),
+        ) as any[];
+
+        return sortedCommits.slice(0, 15).map((commit: any) => ({
+            commitHash: commit.sha as string,
+            commitMessage: commit.commit.message ?? "",
+            commitAuthorName: commit.commit?.author?.name ?? "",
+            commitAuthorAvatar: commit.author?.avatar_url ?? "",
+            commitDate: commit.commit?.author?.date ?? "",
+        }));
+    } catch (error) {
+        console.error("Error fetching commits:", error);
+        return [];
+    }
 };
 
 export const pollRepo = async (projectId: string) => {
@@ -93,7 +103,7 @@ async function summariseCommit(githubUrl: string, commitHash: string) {
             },
         }
     );
-    return await aiSummariseCommit (data) || ""
+    return await aiSummariseCommit(data) || ""
 }
 
 async function filterUnprocessedCommits(projectId: string, commitHases: response[]) {
@@ -107,3 +117,11 @@ async function filterUnprocessedCommits(projectId: string, commitHases: response
     );
     return unprocessedCommits;
 }
+
+
+// const githubUrl = "https://github.com/elliott-chong/normalhuman"
+// const commitHases = await getCommitHashes(githubUrl);
+// const summaries = await Promise.allSettled(
+//     commitHases.map((hash) => summariseCommit(githubUrl, hash.commitHash))
+// )
+// console.log(summaries)
