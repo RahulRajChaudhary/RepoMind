@@ -48,7 +48,7 @@ const getFileCount = async (path: string, octokit: Octokit, githubOwner: string,
 
 export const checkCredits = async (githubUrl: string, githubToken?: string) => {
     const octokit = new Octokit({
-        auth: githubToken || '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',
+        auth: process.env.GITHUB_TOKEN,
     });
     const githubOwner = githubUrl.split('/')[3]
     const githubRepo = githubUrl.split('/')[4]
