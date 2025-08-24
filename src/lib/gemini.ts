@@ -1,14 +1,16 @@
+import { loadGithubRepo } from "./github-loader";
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { loadGithubRepo } from '../lib/github-loader';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
+
+// Access your API key as an environment variable (see our Getting Started tutorial)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 
 export const getEmbeddings = async (text: string) => {
     // For embeddings, use the Text Embeddings model
-    const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+    const model = genAI.getGenerativeModel({ model: "text-embedding-005" });
 
     const result = await model.embedContent(text);
     const embedding = result.embedding;
@@ -69,3 +71,5 @@ It is given only as an example of appropriate comments.`,
 
     return response.response.text();
 };
+
+

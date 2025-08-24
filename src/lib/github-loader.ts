@@ -1,8 +1,7 @@
 import { GithubRepoLoader } from "@langchain/community/document_loaders/web/github";
 import pLimit from 'p-limit'
 import { getEmbeddings } from "./gemini";
-import { getSummary } from "./geminiGen";
-import { exit } from "process";
+import { getSummary } from "./openai";
 import { db } from "@/server/db";
 import { Octokit } from "octokit";
 

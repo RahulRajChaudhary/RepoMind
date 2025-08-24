@@ -1,40 +1,44 @@
-// Import the GoogleGenerativeAI library
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { loadGithubRepo } from './github-loader';
+import { OpenAI } from 'openai'
+import { loadGithubRepo } from './github-loader'
 
-// Initialize the Gemini API client with your API key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
+export const openAI = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+})
 
 export const getSummary = async (doc: Awaited<ReturnType<typeof loadGithubRepo>>[number]) => {
     console.log("getting summary for", doc.metadata.source);
     const code = doc.pageContent.slice(0, 10000); // Limit to 10000 characters
 
-    // Use the Gemini model for content generation
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
-
-    // Combine the system and user prompts for the Gemini API call
-    const prompt = `You are an intelligent senior software engineer who specialises in onboarding junior software engineers onto projects.
-You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file
+    const response = await openAI.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+            {
+                role: "system",
+                content: "You are an intelligent senior software engineer who specialises in onboarding junior software engineers onto projects",
+            },
+            {
+                role: "user",
+                content: `You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file
 Here is the code:
 ---
 ${code}
 ---
-Give a summary no more than 100 words of the code above`;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+Give a summary no more than 100 words of the code above`,
+            },
+        ],
+    });
 
     console.log("got back summary", doc.metadata.source);
-    return text;
+    return response.choices[0]?.message.content;
 }
 
 export const aiSummariseCommit = async (diff: string) => {
-    // Use the Gemini model for content generation
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
-
-    // Combine the system and user prompts for the Gemini API call
-    const prompt = `You are an expert programmer, and you are trying to summarize a git diff.
+    const response = await openAI.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+            {
+                role: "system",
+                content: `You are an expert programmer, and you are trying to summarize a git diff.
 Reminders about the git diff format:
 For every file, there are a few metadata lines, like (for example):
 \`\`\`
@@ -62,23 +66,24 @@ Most commits will have less comments than this examples list.
 The last comment does not include the file names,
 because there were more than two relevant files in the hypothetical commit.
 Do not include parts of the example in your summary.
-It is given only as an example of appropriate comments.
-Please summarise the following diff file: \n\n${diff}`;
+It is given only as an example of appropriate comments.`,
+            },
+            {
+                role: "user",
+                content: `Please summarise the following diff file: \n\n${diff}`,
+            },
+        ],
+    });
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    return text;
+    return response.choices[0]?.message.content;
 };
 
 
 export const getEmbeddings = async (text: string) => {
     const payload = text.replaceAll("\n", " ");
-    
-    // Use the Gemini embedding model
-    const model = genAI.getGenerativeModel({ model: "embedding-001"});
-    
-    const result = await model.embedContent(payload);
-    return result.embedding.values;
+    const response = await openAI.embeddings.create({
+        model: "text-embedding-3-large",
+        input: payload,
+    });
+    return response.data[0]?.embedding;
 }
