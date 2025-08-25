@@ -72,4 +72,3 @@ It is given only as an example of appropriate comments.`,
     return response.response.text();
 };
 
-
